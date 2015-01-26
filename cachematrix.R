@@ -36,7 +36,7 @@ makePathFromCall <- function(aCall=call(`[`)){
 ## 'fun'       a default function to do calculation
 ## '...'       arguments to pass on to function
 
-makeCache <- function(x=NULL,cache=list(),...,fun=`[`){
+makeCache <- function(data=NULL,cache=list(),...,FUN=`[`){
   
   ## Cached calculations are strored recursively in a list.
   ## 'path'    is character vector containing the names of each named list
@@ -53,21 +53,21 @@ makeCache <- function(x=NULL,cache=list(),...,fun=`[`){
   }
   
   getCache <- function (path,c=cache){
-    val <- c[[path[1]]]
+    val <- `[[`(c,path[1])
     if (is.list(val) & length(path[-1])>0) getCache(path[-1],val)
     else val
   }
   
-  set <- function(v){
-    x <<- v
+  set <- function(x){
+    data <<- x
     cache <<- list()
   }
   
-  get <- function() x
+  get <- function() data
   
-  calc <- function(...,f=fun){  
+  calc <- function(...,fun=FUN){  
     ## translate function call to a path
-    path <- makePathFromCall(substitute(f(...)))
+    path <- makePathFromCall(substitute(fun(...)))
     
     ## Look up a cache
     cal<-getCache(path)
@@ -76,17 +76,17 @@ makeCache <- function(x=NULL,cache=list(),...,fun=`[`){
     if (is.null(cal)){ ## If cal is null, calculate
       
       ## Simulate expensive calculation
-      for(i in 1:5){
-        Sys.sleep(1)
-        message("Cache not found. Calculating, taking a long time..")
+      message("Cache not found. Calculating, taking a long time.",appendLF=F)
+      for (i in 1:10){
+        Sys.sleep(.4)
+        message(".",appendLF=F)
       }
-      Sys.sleep(.5)
       message("Done.")
       Sys.sleep(.2)
       
       
       ## Apply function on x
-      cal<-f(x,...)
+      cal<-fun(data,...)
       
       ## Store cache
       setCache(path,cal)
@@ -103,7 +103,7 @@ makeCacheMatrix <- function(x = matrix()) {
   
   ## Setup specialized cache instance for matix and solve
   ## following example conventions
-  cm<-makeCache(x,fun=solve)
+  cm<-makeCache(x,FUN=solve)
   list(
     set=cm$set,
     get=cm$get,
@@ -129,7 +129,7 @@ cacheSolve <- function(x,...) {
   
 }
 
-test <- function() {
+testCacheSolve <- function() {
   message("Create a matrix and make cache object.")
   m <- matrix(c(1:4),2,2)
   cm <- makeCacheMatrix(m)
@@ -142,3 +142,17 @@ test <- function() {
   secondCalInverse <- cacheSolve(cm)
   print(secondCalInverse)
 }
+
+testMakeCache <- function() {
+  message("Make cache")
+  cache <- makeCache(matrix(1:4,2,2),FUN=t)
+  message("Fisrt t")
+  print(cache$calc())
+  message("Fisrt solve")
+  print(cache$calc(fun=solve))
+  message("Second t")
+  print(cache$calc())
+  message("Second solve")
+  print(cache$calc(fun=solve))
+}
+
