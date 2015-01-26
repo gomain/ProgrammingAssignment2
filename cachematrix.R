@@ -98,10 +98,8 @@ makeCache <- function(x=NULL,cache=list(),...,fun=`[`){
   list(set=set,get=get,calc=calc)
 }
 
- makeCacheMatrix <- function(x = matrix()) {
-   
-  ## This is where the generic caching is implemented
-  source("cache.R",local=TRUE)
+makeCacheMatrix <- function(x = matrix()) {
+
   
   ## Setup specialized cache instance for matix and solve
   ## following example conventions
